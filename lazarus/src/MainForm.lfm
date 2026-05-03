@@ -1,0 +1,21 @@
+object frmMain: TfrmMain
+  Left = 200
+  Height = 480
+  Top = 200
+  Width = 800
+  Caption = 'MMTTY Lazarus Port (WIP)'
+  ClientHeight = 480
+  ClientWidth = 800
+  OnCreate = FormCreate
+  LCLVersion = '3.0.0.0'
+  object MemoStatus: TMemo
+    Left = 8
+    Height = 464
+    Top = 8
+    Width = 784
+    Align = alClient
+    ReadOnly = True
+    ScrollBars = ssVertical
+    TabOrder = 0
+  end
+end

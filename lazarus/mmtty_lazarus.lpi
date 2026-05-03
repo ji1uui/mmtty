@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <ProjectOptions>
+    <Version Value="12"/>
+    <PathDelim Value="/"/>
+    <General>
+      <SessionStorage Value="InProjectDir"/>
+      <MainUnit Value="0"/>
+      <Title Value="mmtty_lazarus"/>
+      <ResourceType Value="res"/>
+      <UseXPManifest Value="True"/>
+      <Platforms>
+        <Platform1 Value="Win64"/>
+        <Platform2 Value="Darwin"/>
+      </Platforms>
+    </General>
+    <BuildModes Count="2">
+      <Item1 Name="Windows" Default="True"/>
+      <Item2 Name="macOS_ARM64"/>
+    </BuildModes>
+    <Units Count="1">
+      <Unit0>
+        <Filename Value="src/mmtty_lazarus.lpr"/>
+        <IsPartOfProject Value="True"/>
+      </Unit0>
+    </Units>
+  </ProjectOptions>
+</CONFIG>
