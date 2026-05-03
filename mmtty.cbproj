@@ -148,7 +148,7 @@
         <BCC_InlineFunctionExpansion>false</BCC_InlineFunctionExpansion>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_1_Win32)'!=''">
-        <ILINK_LibraryPath>C:\Users\Public\Documents\Embarcadero\Studio\15.0\DCP\;$(ILINK_LibraryPath)</ILINK_LibraryPath>
+        <ILINK_LibraryPath>$(BDSCOMMONDIR)\Dcp;$(ILINK_LibraryPath)</ILINK_LibraryPath>
         <BCC_AllCodeguardOptions>false</BCC_AllCodeguardOptions>
         <BCC_MonitorGlobalAndStackData>false</BCC_MonitorGlobalAndStackData>
         <BCC_MonitorThis>false</BCC_MonitorThis>
