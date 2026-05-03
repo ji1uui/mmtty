@@ -68,6 +68,32 @@ USEUNIT("CLX.cpp");
 //---------------------------------------------------------------------------
 #define DISDUPE		1
 //---------------------------------------------------------------------------
+static void ConfigureModernDevicePerformance()
+{
+#if defined(_WIN32)
+	// Windows 10/11 (incl. 2023+ devices): avoid EcoQoS throttling for DSP latency stability.
+	typedef BOOL (WINAPI *SetProcessInformationFunc)(HANDLE, PROCESS_INFORMATION_CLASS, LPVOID, DWORD);
+	HMODULE hKernel32 = ::GetModuleHandleW(L"kernel32.dll");
+	if( hKernel32 != NULL ){
+		SetProcessInformationFunc pSetProcessInformation =
+			reinterpret_cast<SetProcessInformationFunc>(::GetProcAddress(hKernel32, "SetProcessInformation"));
+		if( pSetProcessInformation != NULL ){
+#if defined(PROCESS_POWER_THROTTLING_CURRENT_VERSION) && defined(PROCESS_POWER_THROTTLING_EXECUTION_SPEED)
+			PROCESS_POWER_THROTTLING_STATE pts = {};
+			pts.Version = PROCESS_POWER_THROTTLING_CURRENT_VERSION;
+			pts.ControlMask = PROCESS_POWER_THROTTLING_EXECUTION_SPEED;
+			pts.StateMask = 0;
+			pSetProcessInformation(::GetCurrentProcess(), ProcessPowerThrottling, &pts, sizeof(pts));
+#endif
+		}
+	}
+
+	// Prefer consistent CPU time for real-time demod/decoder workload,
+	// while avoiding excessive starvation of other system tasks.
+	::SetPriorityClass(::GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
+#endif
+}
+
 WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
 #if DISDUPE
@@ -81,6 +107,7 @@ WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 #endif
 	try
 	{
+		ConfigureModernDevicePerformance();
 		Application->Initialize();
 		Application->CreateForm(__classid(TMmttyWd), &MmttyWd);
 		Application->Run();
