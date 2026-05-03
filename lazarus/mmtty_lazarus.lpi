@@ -18,11 +18,210 @@
       <Item1 Name="Windows" Default="True"/>
       <Item2 Name="macOS_ARM64"/>
     </BuildModes>
-    <Units Count="1">
+    <CompilerOptions>
+      <Version Value="11"/>
+      <SearchPaths>
+        <OtherUnitFiles Value="src;src/domain;src/application;src/infrastructure"/>
+        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+      </SearchPaths>
+      <Parsing>
+        <SyntaxOptions>
+          <UseAnsiStrings Value="True"/>
+        </SyntaxOptions>
+      </Parsing>
+      <Other>
+        <Verbosity>
+          <ShowHints Value="True"/>
+        </Verbosity>
+      </Other>
+    </CompilerOptions>
+    <Units Count="40">
+      <!-- Entry point -->
       <Unit0>
         <Filename Value="src/mmtty_lazarus.lpr"/>
         <IsPartOfProject Value="True"/>
       </Unit0>
+
+      <!-- Presentation layer -->
+      <Unit1>
+        <Filename Value="src/MainForm.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="frmMain"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+      </Unit1>
+
+      <!-- Domain layer -->
+      <Unit2>
+        <Filename Value="src/domain/uDomainTypes.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit2>
+      <Unit3>
+        <Filename Value="src/domain/uInterfaces.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="src/domain/uEventBus.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="src/domain/uTxStateMachine.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="src/domain/uDspPipeline.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit6>
+
+      <!-- Application layer -->
+      <Unit7>
+        <Filename Value="src/application/uServiceLocator.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="src/application/uTxService.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="src/application/uRxService.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit9>
+
+      <!-- Infrastructure: Communication -->
+      <Unit10>
+        <Filename Value="src/uComm.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="src/uComLib.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit11>
+
+      <!-- Infrastructure: Audio -->
+      <Unit12>
+        <Filename Value="src/uSound.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit12>
+      <Unit13>
+        <Filename Value="src/uWave.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit13>
+
+      <!-- Infrastructure: DSP -->
+      <Unit14>
+        <Filename Value="src/uFft.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit14>
+      <Unit15>
+        <Filename Value="src/ufir.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit15>
+
+      <!-- Infrastructure: RTTY protocol -->
+      <Unit16>
+        <Filename Value="src/uRtty.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit16>
+      <Unit17>
+        <Filename Value="src/ummtty.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit17>
+
+      <!-- Infrastructure: Logging & Config -->
+      <Unit18>
+        <Filename Value="src/uLogFile.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit18>
+      <Unit19>
+        <Filename Value="src/uOption.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit19>
+
+      <!-- Infrastructure: Radio control -->
+      <Unit20>
+        <Filename Value="src/ucradio.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit20>
+
+      <!-- Display models -->
+      <Unit21>
+        <Filename Value="src/uScope.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit21>
+      <Unit22>
+        <Filename Value="src/uFreqDisp.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit22>
+
+      <!-- Remaining stub units (pending translation) -->
+      <Unit23>
+        <Filename Value="src/uCLX.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit23>
+      <Unit24>
+        <Filename Value="src/uLogConv.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit24>
+      <Unit25>
+        <Filename Value="src/uLogSet.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit25>
+      <Unit26>
+        <Filename Value="src/uLogList.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit26>
+      <Unit27>
+        <Filename Value="src/uHamlog5.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit27>
+      <Unit28>
+        <Filename Value="src/uMMlink.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit28>
+      <Unit29>
+        <Filename Value="src/uLoglink.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit29>
+      <Unit30>
+        <Filename Value="src/uctnc.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit30>
+      <Unit31>
+        <Filename Value="src/ummcg.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit31>
+      <Unit32>
+        <Filename Value="src/umml.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit32>
+      <Unit33>
+        <Filename Value="src/ummrp.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit33>
+      <Unit34>
+        <Filename Value="src/ummw.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit34>
+      <Unit35>
+        <Filename Value="src/uClockAdj.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit35>
+      <Unit36>
+        <Filename Value="src/uConvDef.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit36>
+      <Unit37>
+        <Filename Value="src/ucountry.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit37>
+      <Unit38>
+        <Filename Value="src/uVerDsp.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit38>
+      <Unit39>
+        <Filename Value="src/uTncSet.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit39>
     </Units>
   </ProjectOptions>
 </CONFIG>
