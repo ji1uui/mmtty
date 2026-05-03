@@ -35,6 +35,14 @@ const BYTE kDisableDiddleSignal = 0xfd;
 const BYTE kEnableDiddleSignal = 0xfc;
 }
 
+
+class TxQueue { public: TxQueue(CComm* c):m_comm(c){} bool Push(BYTE c){ if(m_comm->m_txcnt>=COMM_TXBUFSIZE) return false; m_comm->m_txbuf[m_comm->m_txwp]=c; m_comm->m_txwp++; if(m_comm->m_txwp>=COMM_TXBUFSIZE) m_comm->m_txwp=0; m_comm->m_txcnt++; return true;} private: CComm* m_comm;};
+class TxProtocol { public: void ApplyControl(CComm* c,BYTE d){ switch(d){ case kMarkSignal: ::Sleep((c->pMod->m_ReCount * 3 * 1000) / SampFreq); break; case kIgnoreSignal: break; case kDisableDiddleSignal: c->m_DisDiddle = 0; break; case kEnableDiddleSignal: c->m_DisDiddle = 1; break; } } };
+class CommPortSerial { public: void Put(HANDLE h, BYTE d){ TransmitCommChar(h,d);} };
+class CommPortExtFsk { public: void Put(CEXTFSK* p, BYTE d){ p->PutChar(d);} };
+class CommStateMachine { public: bool CanRun(CComm* c){ return c->m_CreateON && c->m_TxEnb; } };
+class TxWorker { public: TxWorker(CComm* c):m_comm(c){} CComm* m_comm;};
+
 COMMPARA	COMM;
 // EN: Initializes global COM parameter state.
 void InitCOMMPara(void)
@@ -60,6 +68,12 @@ __fastcall CComm::CComm(bool CreateSuspended)
 
 	pMod = NULL;
 	m_pEXT = NULL;
+	m_txQueue = new TxQueue(this);
+	m_txProtocol = new TxProtocol();
+	m_serialPort = new CommPortSerial();
+	m_extfskPort = new CommPortExtFsk();
+	m_stateMachine = new CommStateMachine();
+	m_txWorker = new TxWorker(this);
 }
 
 void __fastcall CComm::WaitTXD(int w)
@@ -151,10 +165,10 @@ void __fastcall CComm::OutData(BYTE d)
 		m_nextcount = ::GetTickCount() + m_addcount;
 	}
 	if( m_pEXT != NULL ){
-		m_pEXT->PutChar(d);
+		m_extfskPort->Put(m_pEXT, d);
 	}
 	else {
-		TransmitCommChar(m_fHnd, d);
+		m_serialPort->Put(m_fHnd, d);
 	}
 #if BITDEBUG
 	m_bitCountA = GetTickCount() - m_bitCount;
@@ -313,6 +327,12 @@ void __fastcall CComm::Close(void)
 		}
 		m_CreateON = FALSE;
 	}
+	delete m_txWorker; m_txWorker = NULL;
+	delete m_stateMachine; m_stateMachine = NULL;
+	delete m_extfskPort; m_extfskPort = NULL;
+	delete m_serialPort; m_serialPort = NULL;
+	delete m_txProtocol; m_txProtocol = NULL;
+	delete m_txQueue; m_txQueue = NULL;
 }
 void __fastcall CComm::ReqClose(void)
 {
@@ -528,11 +548,7 @@ int __fastcall CComm::TxBusy(void)
 void __fastcall CComm::PutChar(BYTE c)
 {
 	if( (m_CreateON == TRUE) && m_Execute ){
-		if( m_txcnt < COMM_TXBUFSIZE ){
-			m_txbuf[m_txwp] = c;
-			m_txwp++;
-			if( m_txwp >= COMM_TXBUFSIZE ) m_txwp = 0;
-			m_txcnt++;
+		if( m_txQueue->Push(c) ){
 			m_idle = 0;
 			FSKCount++;
 		}

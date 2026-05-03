@@ -18,7 +18,7 @@
 
 
 ///----------------------------------------------------------
-///  ‚q‚r‚Q‚R‚Q‚b’ÊMƒNƒ‰ƒX
+///  ï¼²ï¼³ï¼’ï¼“ï¼’ï¼£é€šä¿¡ã‚¯ãƒ©ã‚¹
 ///
 ///  (C) JE3HHT Makoto.Mori
 ///
@@ -77,11 +77,11 @@ public:
 class CComm : public TThread
 {
 public:
-	BOOL	m_CreateON;		// ƒNƒŠƒGƒCƒgƒtƒ‰ƒO
+	BOOL	m_CreateON;		// ã‚¯ãƒªã‚¨ã‚¤ãƒˆãƒ•ãƒ©ã‚°
 	volatile	int	m_Command;
 	int		m_Execute;
-	DCB		m_dcb;			// ‚c‚b‚a
-	HANDLE	m_fHnd;			// ƒtƒ@ƒCƒ‹ƒnƒ“ƒhƒ‹
+	DCB		m_dcb;			// ï¼¤ï¼£ï¼¢
+	HANDLE	m_fHnd;			// ãƒ•ã‚¡ã‚¤ãƒ«ãƒãƒ³ãƒ‰ãƒ«
 	int		m_inv;
 
 	int		m_TxEnb;
@@ -110,6 +110,12 @@ public:
 #endif
 
 	CEXTFSK	*m_pEXT;
+	class TxQueue *m_txQueue;
+	class TxProtocol *m_txProtocol;
+	class CommPortSerial *m_serialPort;
+	class CommPortExtFsk *m_extfskPort;
+	class CommStateMachine *m_stateMachine;
+	class TxWorker *m_txWorker;
 protected:
 	void virtual __fastcall Execute();
 private:
