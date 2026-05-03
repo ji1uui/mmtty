@@ -27,8 +27,16 @@
 #define	WAITSTAT	0
 
 #define	DEFFSOUND	3
+namespace {
+// EN: Control symbols embedded in TX queue for behavior switching.
+const BYTE kMarkSignal = 0xff;
+const BYTE kIgnoreSignal = 0xfe;
+const BYTE kDisableDiddleSignal = 0xfd;
+const BYTE kEnableDiddleSignal = 0xfc;
+}
 
 COMMPARA	COMM;
+// EN: Initializes global COM parameter state.
 void InitCOMMPara(void)
 {
 	COMM.change = 1;
@@ -37,9 +45,9 @@ void InitCOMMPara(void)
 __fastcall CComm::CComm(bool CreateSuspended)
 	: TThread(CreateSuspended)
 {
-	m_CreateON = FALSE;	// ƒNƒŠƒGƒCƒgƒtƒ‰ƒO
+	m_CreateON = FALSE;	// ã‚¯ãƒªã‚¨ã‚¤ãƒˆãƒ•ãƒ©ã‚°
 	m_Command = 0;
-	m_fHnd = NULL;		// ƒtƒ@ƒCƒ‹ƒnƒ“ƒhƒ‹
+	m_fHnd = NULL;		// ãƒ•ã‚¡ã‚¤ãƒ«ãƒãƒ³ãƒ‰ãƒ«
 	m_inv = 0;
 	m_Execute = 0;
 	m_txwp = m_txrp = m_txcnt = 0;
@@ -114,7 +122,7 @@ void __fastcall CComm::Timer(void)
 	}
 }
 //-----------------------------------------------------------------
-// DTR‚Å•„†‘—M—p
+// DTRã§ç¬¦å·é€ä¿¡ç”¨
 void __fastcall CComm::OutData(BYTE d)
 {
 	const BYTE tbl[]={
@@ -158,7 +166,7 @@ void __fastcall CComm::Execute()
 {
 	m_Execute = 1;
     int BitLen = pMod->m_BitLen;
-	//---- ƒXƒŒƒbƒh‚ÌƒR[ƒh‚ğ‚±‚±‚É‹Lq ----
+	//---- ã‚¹ãƒ¬ãƒƒãƒ‰ã®ã‚³ãƒ¼ãƒ‰ã‚’ã“ã“ã«è¨˜è¿° ----
 //	Priority = tpLower;
 	while(1){
 _try:;
@@ -174,12 +182,12 @@ _try:;
 				::Sleep(10);
 			}
 			else if( !TxBusy() ){
-				if( m_FirstGaurd ){		// Å‰‚ÌƒK[ƒhŠÔ‚ÌŠm•Û
-					m_FirstGaurd = 0;
-					::Sleep(250);
-					if( m_DisDiddle == -1 ) m_DisDiddle = 0;
+							case kMarkSignal:		// Mark
+							case kIgnoreSignal:		// LAf
+							case kDisableDiddleSignal:		// disable diddle
+							case kEnableDiddleSignal:		// enable diddle
 				}
-				else if( m_txcnt && (FSKDeff <= DEFFSOUND) ){	// ‘—Mƒf[ƒ^‚ ‚è
+				else if( m_txcnt && (FSKDeff <= DEFFSOUND) ){	// é€ä¿¡ãƒ‡ãƒ¼ã‚¿ã‚ã‚Š
 					m_DisDiddle = pMod->m_DisDiddle;
 					m_Data = m_txbuf[m_txrp];
 					if( m_figout && (m_fig == 0x1b) && (m_Data != 0x1f) ){
@@ -191,7 +199,7 @@ _try:;
 								::Sleep((pMod->m_ReCount * 3 * 1000) / SampFreq);
 								NextBuf();
 								goto _try;
-							case 0xfe:		// ƒLƒƒƒŠƒA’f‘±
+							case 0xfe:		// ã‚­ãƒ£ãƒªã‚¢æ–­ç¶š
 								NextBuf();
 								goto _try;
 							case 0xfd:		// disable diddle
@@ -273,7 +281,7 @@ _try:;
 }
 /*#$%
 ==============================================================
-	’ÊM‰ñü‚ğƒNƒ[ƒY‚·‚é
+	é€šä¿¡å›ç·šã‚’ã‚¯ãƒ­ãƒ¼ã‚ºã™ã‚‹
 --------------------------------------------------------------
 --------------------------------------------------------------
 --------------------------------------------------------------
@@ -284,11 +292,11 @@ void __fastcall CComm::Close(void)
 	if( m_CreateON == TRUE ){
 		if( m_Execute ){
 			m_TxEnb = 0;
-			m_Command = COMM_CLOSE;	// ƒXƒŒƒbƒhI—¹ƒRƒ}ƒ“ƒh
-			Priority = tpNormal;		//ƒXƒŒƒbƒh‚Í’Êí‚Ì—Dæ“x‚Å‚ ‚é
+			m_Command = COMM_CLOSE;	// ã‚¹ãƒ¬ãƒƒãƒ‰çµ‚äº†ã‚³ãƒãƒ³ãƒ‰
+			Priority = tpNormal;		//ã‚¹ãƒ¬ãƒƒãƒ‰ã¯é€šå¸¸ã®å„ªå…ˆåº¦ã§ã‚ã‚‹
 #if 0
 			DWORD tim = GetTickCount();
-			while( m_Command && (GetTickCount() < (tim + 3000)) ){			// ƒXƒŒƒbƒhI—¹‘Ò‚¿
+			while( m_Command && (GetTickCount() < (tim + 3000)) ){			// ã‚¹ãƒ¬ãƒƒãƒ‰çµ‚äº†å¾…ã¡
 				::Sleep(1);
 			}
 #else
@@ -311,8 +319,8 @@ void __fastcall CComm::ReqClose(void)
 	if( m_CreateON == TRUE ){
 		if( m_Execute ){
 			m_TxEnb = 0;
-			m_Command = COMM_CLOSE;	// ƒXƒŒƒbƒhI—¹ƒRƒ}ƒ“ƒh
-			Priority = tpNormal;		//ƒXƒŒƒbƒh‚Í’Êí‚Ì—Dæ“x‚Å‚ ‚é
+			m_Command = COMM_CLOSE;	// ã‚¹ãƒ¬ãƒƒãƒ‰çµ‚äº†ã‚³ãƒãƒ³ãƒ‰
+			Priority = tpNormal;		//ã‚¹ãƒ¬ãƒƒãƒ‰ã¯é€šå¸¸ã®å„ªå…ˆåº¦ã§ã‚ã‚‹
 			FSKCount1+=1000;
 		}
 	}
@@ -323,7 +331,7 @@ void __fastcall CComm::WaitClose(void)
 		if( m_Execute && m_Command ){
 #if 0
 			DWORD tim = GetTickCount();
-			while( GetTickCount() < (tim + 3000) ){		// 1[s]‚ÌƒEƒGƒCƒg
+			while( GetTickCount() < (tim + 3000) ){		// 1[s]ã®ã‚¦ã‚¨ã‚¤ãƒˆ
 				if( !m_Command ) break;
 				::Sleep(1);
 			}
@@ -343,12 +351,12 @@ void __fastcall CComm::WaitClose(void)
 }
 /*#$%
 ==============================================================
-	’ÊM‰ñü‚ğƒI[ƒvƒ“‚·‚é
+	é€šä¿¡å›ç·šã‚’ã‚ªãƒ¼ãƒ—ãƒ³ã™ã‚‹
 --------------------------------------------------------------
-PortName : ‰ñü‚Ì–¼‘O
-pCP		 : COMMPARA‚Ìƒ|ƒCƒ“ƒ^iƒkƒ‹‚Ì‚ÍƒfƒtƒHƒ‹ƒg‚Å‰Šú‰»j
-RBufSize : óMƒoƒbƒtƒ@‚ÌƒTƒCƒY(default=2048)
-TBufSize : ‘—Mƒoƒbƒtƒ@‚ÌƒTƒCƒY(default=2048)
+PortName : å›ç·šã®åå‰
+pCP		 : COMMPARAã®ãƒã‚¤ãƒ³ã‚¿ï¼ˆãƒŒãƒ«ã®æ™‚ã¯ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆã§åˆæœŸåŒ–ï¼‰
+RBufSize : å—ä¿¡ãƒãƒƒãƒ•ã‚¡ã®ã‚µã‚¤ã‚º(default=2048)
+TBufSize : é€ä¿¡ãƒãƒƒãƒ•ã‚¡ã®ã‚µã‚¤ã‚º(default=2048)
 --------------------------------------------------------------
 TRUE/FALSE
 --------------------------------------------------------------
@@ -425,8 +433,8 @@ BOOL __fastcall CComm::Open(LPCTSTR PortName, int inv, COMMPARA *cp)
 	m_dcb.fOutxDsrFlow = FALSE;
 	m_dcb.EvtChar = 0x0d;
 
-	m_dcb.fRtsControl = m_inv ? RTS_CONTROL_ENABLE : RTS_CONTROL_DISABLE;		// ‘—M‹Ö~
-	m_dcb.fDtrControl = m_inv ? DTR_CONTROL_ENABLE : DTR_CONTROL_DISABLE;		// ‘—M‹Ö~
+	m_dcb.fRtsControl = m_inv ? RTS_CONTROL_ENABLE : RTS_CONTROL_DISABLE;		// é€ä¿¡ç¦æ­¢
+	m_dcb.fDtrControl = m_inv ? DTR_CONTROL_ENABLE : DTR_CONTROL_DISABLE;		// é€ä¿¡ç¦æ­¢
 
 //	m_dcb.fTXContinueOnXoff = TRUE;
 	m_dcb.XonLim = USHORT(1024/4);			// 1/4 of RBufSize
@@ -458,7 +466,7 @@ BOOL __fastcall CComm::Open(LPCTSTR PortName, int inv, COMMPARA *cp)
 	return TRUE;
 }
 //-----------------------------------------------------------------
-// PTTØ‚è‘Ö‚¦—p
+// PTTåˆ‡ã‚Šæ›¿ãˆç”¨
 void __fastcall CComm::SetTXRX(int sw)
 {
 	if( m_CreateON == FALSE ) return;
@@ -478,7 +486,7 @@ void __fastcall CComm::SetTXRX(int sw)
 }
 #if 0
 //-----------------------------------------------------------------
-// DTR‚Å•„†‘—M—p
+// DTRã§ç¬¦å·é€ä¿¡ç”¨
 void __fastcall CComm::SetDTR(int sw)
 {
 	if( m_CreateON == FALSE ) return;
@@ -492,7 +500,7 @@ void __fastcall CComm::SetDTR(int sw)
 }
 #endif
 //-----------------------------------------------------------------
-// ‘—MƒrƒW[‚©‚Ç‚¤‚©’²‚×‚é   TRUE : ‘—MƒrƒW[ó‘Ô
+// é€ä¿¡ãƒ“ã‚¸ãƒ¼ã‹ã©ã†ã‹èª¿ã¹ã‚‹   TRUE : é€ä¿¡ãƒ“ã‚¸ãƒ¼çŠ¶æ…‹
 int __fastcall CComm::TxBusy(void)
 {
 	if( m_CreateON == FALSE ) return 0;
@@ -511,7 +519,7 @@ int __fastcall CComm::TxBusy(void)
 
 /*#$%
 ==============================================================
-	’ÊM‰ñü‚Éƒf[ƒ^‚ğ‘—M‚·‚é
+	é€šä¿¡å›ç·šã«ãƒ‡ãƒ¼ã‚¿ã‚’é€ä¿¡ã™ã‚‹
 --------------------------------------------------------------
 --------------------------------------------------------------
 --------------------------------------------------------------
@@ -534,10 +542,10 @@ void __fastcall CComm::PutChar(BYTE c)
 #if 0
 /*#$%
 ==============================================================
-	óMƒoƒbƒtƒ@“à‚ÌŠi”[ƒf[ƒ^’·‚ğ“¾‚é
+	å—ä¿¡ãƒãƒƒãƒ•ã‚¡å†…ã®æ ¼ç´ãƒ‡ãƒ¼ã‚¿é•·ã‚’å¾—ã‚‹
 --------------------------------------------------------------
 --------------------------------------------------------------
-	ƒf[ƒ^‚Ì’·‚³
+	ãƒ‡ãƒ¼ã‚¿ã®é•·ã•
 --------------------------------------------------------------
 ==============================================================
 */
