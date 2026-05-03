@@ -29,12 +29,12 @@ enum TFontPitch { fpDefault, fpVariable, fpFixed };	//JA7UDE 0427
 //---------------------------------------------------------------------------
 //#define	SYSMB	1			// MessageBox 0-Application, 1-System
 //
-char	BgnDir[256];		// ‹N“®ƒfƒBƒŒƒNƒgƒŠ
-char	LogDir[256];		// óM‹L˜^‚ÌƒfƒBƒŒƒNƒgƒŠ
-char	OutFileDir[256];	// ƒeƒLƒXƒg‘—Mƒtƒ@ƒCƒ‹‚ÌƒfƒBƒGƒNƒgƒŠ
-char	MMLogDir[256];		// MMLOGƒtƒ@ƒCƒ‹‚ÌƒfƒBƒŒƒNƒgƒŠ
-char	ExtLogDir[256];		// ƒGƒNƒXƒ|[ƒgƒtƒ@ƒCƒ‹‚ÌƒfƒBƒŒƒNƒgƒŠ
-char	RecDir[256];		// ˜^‰¹ƒtƒ@ƒCƒ‹‚ÌƒfƒBƒŒƒNƒgƒŠ
+char	BgnDir[256];		// èµ·å‹•ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
+char	LogDir[256];		// å—ä¿¡è¨˜éŒ²ã®ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
+char	OutFileDir[256];	// ãƒ†ã‚­ã‚¹ãƒˆé€ä¿¡ãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ‡ã‚£ã‚¨ã‚¯ãƒˆãƒª
+char	MMLogDir[256];		// MMLOGãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
+char	ExtLogDir[256];		// ã‚¨ã‚¯ã‚¹ãƒãƒ¼ãƒˆãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
+char	RecDir[256];		// éŒ²éŸ³ãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒª
 AnsiString	JanHelp;
 
 int     WinNT;
@@ -45,7 +45,7 @@ int		FSKCount1;
 int		FSKCount2;
 int		FSKDeff;
 
-double	SampFreq = 11025.0;	// ƒTƒ“ƒvƒŠƒ“ƒOü”g”
+double	SampFreq = 11025.0;	// ã‚µãƒ³ãƒ—ãƒªãƒ³ã‚°å‘¨æ³¢æ•°
 double	SampBase = 11025.0;
 double	DemSamp = 11025.0*0.5;
 int		DemOver = 1;
@@ -54,7 +54,7 @@ int     SampSize = 1024;
 int		FFT_SIZE=2048;
 
 SYSSET	sys;
-LCID	lcid;				// ƒƒP[ƒ‹î•ñ
+LCID	lcid;				// ãƒ­ã‚±ãƒ¼ãƒ«æƒ…å ±
 DWORD ColorTable[128];
 int		DisPaint;
 int		Remote;
@@ -98,7 +98,7 @@ void __fastcall ShowHtmlHelp(LPCSTR pContext)
 		ErrorMB( "'%s' was not found.\r\n\r\nPlease search in the MMTTY English Web Site.", sys.m_HTMLHelp.c_str());
 	}
 	else {
-		ErrorMB( "'%s'‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ.\r\n\r\nMMTTY English Web Site ‚©‚çƒ_ƒEƒ“ƒ[ƒh‚µ‚Ä‰º‚³‚¢.", sys.m_HTMLHelp.c_str());
+		ErrorMB( "'%s'ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“.\r\n\r\nMMTTY English Web Site ã‹ã‚‰ãƒ€ã‚¦ãƒ³ãƒ­ãƒ¼ãƒ‰ã—ã¦ä¸‹ã•ã„.", sys.m_HTMLHelp.c_str());
 	}
 }
 #if 0		// Delete by JE3HHT on 29.Sep.2010
@@ -204,74 +204,50 @@ int SetTimeOffsetInfo(int &Hour, int &Min)
 	return TRUE;
 }
 //---------------------------------------------------------------------------
+// Purpose/EN: Apply user-configured hour/minute offset to SYSTEMTIME safely.
+// Mokuteki/JP: user settei no jisa o SYSTEMTIME ni tekiyou suru.
+// Args: tp = target time structure. / Hikisu: tp = hosei taisho jikoku kozo.
+// Returns: void. / Modorichi: nashi.
 void AddjustOffset(SYSTEMTIME *tp)
 {
-	if( sys.m_TimeOffset || sys.m_TimeOffsetMin ){
-//typedef struct _SYSTEMTIME {  /* st */
-//    WORD wYear;
-//    WORD wMonth;
-//    WORD wDayOfWeek;
-//    WORD wDay;
-//    WORD wHour;
-//    WORD wMinute;
-//    WORD wSecond;
-//    WORD wMilliseconds;
-//} SYSTEMTIME;
+	if( tp == NULL || (!sys.m_TimeOffset && !sys.m_TimeOffsetMin) ){
+		return;
+	}
 
+	int hour = tp->wHour + sys.m_TimeOffset;
+	int min = tp->wMinute + sys.m_TimeOffsetMin;
+	while( min >= 60 ){ hour++; min -= 60; }
+	while( min < 0 ){ hour--; min += 60; }
 
-		LPCSTR	mt;
-		int Hour = tp->wHour;
-		int Min = tp->wMinute;
-		Min += sys.m_TimeOffsetMin;
-		if( Min >= 60 ){
-			Hour++;
-			Min -= 60;
-		}
-		else if( Min < 0 ){
-			Hour--;
-			Min += 60;
-		}
-		tp->wMinute = WORD(Min);
-		Hour += sys.m_TimeOffset;
-		if( Hour >= 24 ){
-			tp->wHour = WORD(Hour - 24);
-			tp->wDay++;
-			if( tp->wYear % 4 ){
-				mt = MONN;
+	const char* monTbl = (tp->wYear % 4) ? MONN : MONU;
+	while( hour >= 24 ){
+		hour -= 24;
+		tp->wDay++;
+		if( tp->wDay > monTbl[tp->wMonth] ){
+			tp->wDay = 1;
+			tp->wMonth++;
+			if( tp->wMonth > 12 ){
+				tp->wMonth = 1;
+				tp->wYear++;
+				monTbl = (tp->wYear % 4) ? MONN : MONU;
 			}
-			else {
-				mt = MONU;
-			}
-			if( tp->wDay > mt[tp->wMonth] ){
-				tp->wDay = 1;
-				tp->wMonth++;
-				if( tp->wMonth > 12 ){
-					tp->wMonth = 1;
-					tp->wYear++;
-				}
-			}
-		}
-		else if( Hour < 0 ){
-			tp->wHour = WORD(Hour + 24);
-			tp->wDay--;
-			if( tp->wDay < 1 ){
-				tp->wMonth--;
-				if( tp->wMonth < 1 ){
-					tp->wMonth = 12;
-					tp->wYear--;
-				}
-				if( tp->wYear % 4 ){
-					tp->wDay = MONN[tp->wMonth];
-				}
-				else {
-					tp->wDay = MONU[tp->wMonth];
-				}
-			}
-		}
-		else {
-			tp->wHour = WORD(Hour);
 		}
 	}
+	while( hour < 0 ){
+		hour += 24;
+		tp->wDay--;
+		if( tp->wDay < 1 ){
+			tp->wMonth--;
+			if( tp->wMonth < 1 ){
+				tp->wMonth = 12;
+				tp->wYear--;
+			}
+			monTbl = (tp->wYear % 4) ? MONN : MONU;
+			tp->wDay = monTbl[tp->wMonth];
+		}
+	}
+	tp->wHour = WORD(hour);
+	tp->wMinute = WORD(min);
 }
 //---------------------------------------------------------------------------
 void GetUTC(SYSTEMTIME *tp)
@@ -333,10 +309,10 @@ const DEFKEYTBL KEYTBL[]={
 	{ VK_F11, "F11" },
 	{ VK_F12, "F12" },
 
-	{ VK_LEFT, "©"},
-	{ VK_RIGHT, "¨"},
-	{ VK_UP, "ª"},
-	{ VK_DOWN, "«"},
+	{ VK_LEFT, "â†"},
+	{ VK_RIGHT, "â†’"},
+	{ VK_UP, "â†‘"},
+	{ VK_DOWN, "â†“"},
 	{ VK_PRIOR, "PageUp"},
 	{ VK_NEXT, "PageDown"},
 	{ VK_HOME, "Home" },
@@ -361,10 +337,10 @@ const DEFKEYTBL KEYTBL[]={
 	{ VK_F11 | 0x400, "Shift+F11" },
 	{ VK_F12 | 0x400, "Shift+F12" },
 
-	{ VK_LEFT | 0x400, "Shift+©"},
-	{ VK_RIGHT | 0x400, "Shift+¨"},
-	{ VK_UP | 0x400, "Shift+ª"},
-	{ VK_DOWN | 0x400, "Shift+«"},
+	{ VK_LEFT | 0x400, "Shift+â†"},
+	{ VK_RIGHT | 0x400, "Shift+â†’"},
+	{ VK_UP | 0x400, "Shift+â†‘"},
+	{ VK_DOWN | 0x400, "Shift+â†“"},
 	{ VK_PRIOR | 0x400, "Shift+PageUp"},
 	{ VK_NEXT | 0x400, "Shift+PageDown"},
 	{ VK_HOME | 0x400, "Shift+Home" },
@@ -423,10 +399,10 @@ const DEFKEYTBL KEYTBL[]={
 	{ 'Y' | 0x100, "Ctrl+Y" },
 	{ 'Z' | 0x100, "Ctrl+Z" },
 
-	{ VK_LEFT | 0x100, "Ctrl+©"},
-	{ VK_RIGHT | 0x100, "Ctrl+¨"},
-	{ VK_UP | 0x100, "Ctrl+ª"},
-	{ VK_DOWN | 0x100, "Ctrl+«"},
+	{ VK_LEFT | 0x100, "Ctrl+â†"},
+	{ VK_RIGHT | 0x100, "Ctrl+â†’"},
+	{ VK_UP | 0x100, "Ctrl+â†‘"},
+	{ VK_DOWN | 0x100, "Ctrl+â†“"},
 	{ VK_PRIOR | 0x100, "Ctrl+PageUp"},
 	{ VK_NEXT | 0x100, "Ctrl+PageDown"},
 	{ VK_HOME | 0x100, "Ctrl+Home" },
@@ -484,10 +460,10 @@ const DEFKEYTBL KEYTBL[]={
 	{ 'Y' | 0x200, "Alt+Y" },
 	{ 'Z' | 0x200, "Alt+Z" },
 
-	{ VK_LEFT | 0x200, "Alt+©"},
-	{ VK_RIGHT | 0x200, "Alt+¨"},
-	{ VK_UP | 0x200, "Alt+ª"},
-	{ VK_DOWN | 0x200, "Alt+«"},
+	{ VK_LEFT | 0x200, "Alt+â†"},
+	{ VK_RIGHT | 0x200, "Alt+â†’"},
+	{ VK_UP | 0x200, "Alt+â†‘"},
+	{ VK_DOWN | 0x200, "Alt+â†“"},
 	{ VK_PRIOR | 0x200, "Alt+PageUp"},
 	{ VK_NEXT | 0x200, "Alt+PageDown"},
 	{ VK_HOME | 0x200, "Alt+Home" },
@@ -506,19 +482,19 @@ LPCSTR ToDXKey(LPCSTR s)
 		LPSTR		p;
 		static char bf[32];
 		strcpy(bf, s);
-		if( (p = strstr(bf, "©"))!=NULL ){
+		if( (p = strstr(bf, "â†"))!=NULL ){
 			strcpy(p, "ArrowLeft");
 			return bf;
 		}
-		else if( (p = strstr(bf, "¨"))!=NULL ){
+		else if( (p = strstr(bf, "â†’"))!=NULL ){
 			strcpy(p, "ArrowRight");
 			return bf;
 		}
-		else if( (p = strstr(bf, "«"))!=NULL ){
+		else if( (p = strstr(bf, "â†“"))!=NULL ){
 			strcpy(p, "ArrowDown");
 			return bf;
 		}
-		else if( (p = strstr(bf, "ª"))!=NULL ){
+		else if( (p = strstr(bf, "â†‘"))!=NULL ){
 			strcpy(p, "ArrowUp");
 			return bf;
 		}
@@ -533,19 +509,19 @@ LPCSTR ToJAKey(LPCSTR s)
 		static char bf[32];
 		strcpy(bf, s);
 		if( (p = strstr(bf, "ArrowLeft"))!=NULL ){
-			strcpy(p, "©");
+			strcpy(p, "â†");
 			return bf;
 		}
 		else if( (p = strstr(bf, "ArrowRight"))!=NULL ){
-			strcpy(p, "¨");
+			strcpy(p, "â†’");
 			return bf;
 		}
 		else if( (p = strstr(bf, "ArrowDown"))!=NULL ){
-			strcpy(p, "«");
+			strcpy(p, "â†“");
 			return bf;
 		}
 		else if( (p = strstr(bf, "ArrowUp"))!=NULL ){
-			strcpy(p, "ª");
+			strcpy(p, "â†‘");
 			return bf;
 		}
 	}
@@ -624,12 +600,12 @@ LPUSTR jstrupr(LPUSTR s)
 }
 /*#$%
 ===============================================================
-	‚ğ’²®‚·‚é
+	æ™‚åˆ»ã‚’èª¿æ•´ã™ã‚‹
 ---------------------------------------------------------------
-	t : (UTC)
-	c : ·ƒR[ƒh
+	t : æ™‚åˆ»(UTC)
+	c : æ™‚å·®ã‚³ãƒ¼ãƒ‰
 ---------------------------------------------------------------
-	ƒ[ƒJƒ‹ƒ^ƒCƒ€
+	ãƒ­ãƒ¼ã‚«ãƒ«ã‚¿ã‚¤ãƒ 
 ---------------------------------------------------------------
 	A-Z
 	a-z 	+30min
@@ -669,7 +645,7 @@ WORD AdjustRolTimeUTC(WORD tim, char c)
 	return tim;
 }
 ///----------------------------------------------------------------
-///	ƒEƒBƒ“ƒhƒE‚ğƒNƒ‰ƒCƒAƒ“ƒgƒZƒ“ƒ^[‚É‚·‚é
+///	ã‚¦ã‚£ãƒ³ãƒ‰ã‚¦ã‚’ã‚¯ãƒ©ã‚¤ã‚¢ãƒ³ãƒˆã‚»ãƒ³ã‚¿ãƒ¼ã«ã™ã‚‹
 void FormCenter(TForm *tp, int XW, int YW)
 {
 	int top = (YW - tp->Height)/2;
@@ -725,11 +701,11 @@ void SetButtonCaption(TSpeedButton *tb, AnsiString &as, int maxlen, int fontsize
 }
 /*#$%
 ========================================================
-	ÅŒã‚Ì•¶šƒR[ƒh‚ğ•Ô‚·
+	æœ€å¾Œã®æ–‡å­—ã‚³ãƒ¼ãƒ‰ã‚’è¿”ã™
 --------------------------------------------------------
-	p : •¶š—ñ‚Ìƒ|ƒCƒ“ƒ^
+	p : æ–‡å­—åˆ—ã®ãƒã‚¤ãƒ³ã‚¿
 --------------------------------------------------------
-	•¶šƒR[ƒh
+	æ–‡å­—ã‚³ãƒ¼ãƒ‰
 --------------------------------------------------------
 ========================================================
 */
@@ -746,11 +722,11 @@ char *lastp(char *p)
 }
 /*#$%
 ========================================================
-	––”ö‚ÌƒXƒy[ƒX‚Æ‚s‚`‚a‚ğæ‚é
+	æœ«å°¾ã®ã‚¹ãƒšãƒ¼ã‚¹ã¨ï¼´ï¼¡ï¼¢ã‚’å–ã‚‹
 --------------------------------------------------------
-	s : •¶š—ñ‚Ìƒ|ƒCƒ“ƒ^
+	s : æ–‡å­—åˆ—ã®ãƒã‚¤ãƒ³ã‚¿
 --------------------------------------------------------
-	•¶š—ñ‚Ìƒ|ƒCƒ“ƒ^
+	æ–‡å­—åˆ—ã®ãƒã‚¤ãƒ³ã‚¿
 --------------------------------------------------------
 ========================================================
 */
@@ -780,8 +756,8 @@ LPCSTR _strdmcpy(LPSTR t, LPCSTR p, char c)
 }
 const char *StrDlmCpy(char *t, const char *p, char Dlm, int len)
 {
-	const char _tt1[]="[{(¢<";
-	const char _tt2[]="]})£>";
+	const char _tt1[]="[{(ï½¢<";
+	const char _tt2[]="]})ï½£>";
 	const char	*pp;
 	int			r = FALSE;
 
@@ -794,10 +770,10 @@ const char *StrDlmCpy(char *t, const char *p, char Dlm, int len)
 	}
 	int	f, k;
 	for( f = k = 0; *p;  p++ ){
-		if( k ){															// Š¿š‚QƒoƒCƒg–Ú
+		if( k ){															// æ¼¢å­—ï¼’ãƒã‚¤ãƒˆç›®
 			k = 0;
 		}
-		else if(  _mbsbtype((const unsigned char *)p, 0) == _MBC_LEAD ){	// Š¿š‚PƒoƒCƒg–Ú
+		else if(  _mbsbtype((const unsigned char *)p, 0) == _MBC_LEAD ){	// æ¼¢å­—ï¼‘ãƒã‚¤ãƒˆç›®
 			k = 1;
 		}
 		else if( *p == Key ){
@@ -824,8 +800,8 @@ const char *StrDlmCpy(char *t, const char *p, char Dlm, int len)
 
 const char *StrDlmCpyK(char *t, const char *p, char Dlm, int len)
 {
-	const char _tt1[]="[{(¢<";
-	const char _tt2[]="]})£>";
+	const char _tt1[]="[{(ï½¢<";
+	const char _tt2[]="]})ï½£>";
 	const char	*pp;
 	int			r = FALSE;
 
@@ -838,10 +814,10 @@ const char *StrDlmCpyK(char *t, const char *p, char Dlm, int len)
 	}
 	int	f, k;
 	for( f = k = 0; *p;  p++ ){
-		if( k ){															// Š¿š‚QƒoƒCƒg–Ú
+		if( k ){															// æ¼¢å­—ï¼’ãƒã‚¤ãƒˆç›®
 			k = 0;
 		}
-		else if(  _mbsbtype((const unsigned char *)p, 0) == _MBC_LEAD ){	// Š¿š‚PƒoƒCƒg–Ú
+		else if(  _mbsbtype((const unsigned char *)p, 0) == _MBC_LEAD ){	// æ¼¢å­—ï¼‘ãƒã‚¤ãƒˆç›®
 			k = 1;
 		}
 		else if( (pp = strchr(_tt1, *p))!=NULL ){
@@ -888,11 +864,11 @@ char LastC(LPCSTR p)
 
 /*#$%
 ========================================================
-	Šg’£q‚ğ“¾‚é
+	æ‹¡å¼µå­ã‚’å¾—ã‚‹
 --------------------------------------------------------
-	p : •¶š—ñ‚Ìƒ|ƒCƒ“ƒ^
+	p : æ–‡å­—åˆ—ã®ãƒã‚¤ãƒ³ã‚¿
 --------------------------------------------------------
-	•¶šƒR[ƒh
+	æ–‡å­—ã‚³ãƒ¼ãƒ‰
 --------------------------------------------------------
 ========================================================
 */
@@ -988,7 +964,7 @@ void WriteDoubleIniFile(TMemIniFile *p, LPCSTR c1, LPCSTR c2, double d)
 }
 
 ///----------------------------------------------------------------
-///  ƒRƒƒ“ƒg‚ğíœiƒXƒy[ƒX‚¨‚æ‚Ñ‚s‚`‚a‚àíœj
+///  ã‚³ãƒ¡ãƒ³ãƒˆã‚’å‰Šé™¤ï¼ˆã‚¹ãƒšãƒ¼ã‚¹ãŠã‚ˆã³ï¼´ï¼¡ï¼¢ã‚‚å‰Šé™¤ï¼‰
 ///
 void ClipLF(LPSTR sp)
 {
@@ -1012,7 +988,7 @@ LPSTR FillSpace(LPSTR s, int n)
 	return s;
 }
 ///----------------------------------------------------------------
-///  ƒzƒƒCƒgƒXƒy[ƒX‚ÌƒXƒLƒbƒv
+///  ãƒ›ãƒ¯ã‚¤ãƒˆã‚¹ãƒšãƒ¼ã‚¹ã®ã‚¹ã‚­ãƒƒãƒ—
 ///
 LPSTR SkipSpace(LPSTR sp)
 {
@@ -1031,7 +1007,7 @@ LPCSTR SkipSpace(LPCSTR sp)
 }
 
 ///----------------------------------------------------------------
-///  ƒfƒŠƒ~ƒbƒ^•ª‰ğ‚ğs‚¤
+///  ãƒ‡ãƒªãƒŸãƒƒã‚¿åˆ†è§£ã‚’è¡Œã†
 ///
 LPSTR StrDlm(LPSTR &t, LPSTR p)
 {
@@ -1039,7 +1015,7 @@ LPSTR StrDlm(LPSTR &t, LPSTR p)
 }
 
 ///----------------------------------------------------------------
-///  ƒfƒŠƒ~ƒbƒ^•ª‰ğ‚ğs‚¤
+///  ãƒ‡ãƒªãƒŸãƒƒã‚¿åˆ†è§£ã‚’è¡Œã†
 ///
 LPSTR StrDlm(LPSTR &t, LPSTR p, char c)
 {
@@ -1050,10 +1026,10 @@ LPSTR StrDlm(LPSTR &t, LPSTR p, char c)
 	t = p;
 	f = k = 0;
 	while(*p){
-		if( k ){															// Š¿š‚QƒoƒCƒg–Ú
+		if( k ){															// æ¼¢å­—ï¼’ãƒã‚¤ãƒˆç›®
 			k = 0;
 		}
-		else if(  _mbsbtype((const unsigned char *)p, 0) == _MBC_LEAD ){	// Š¿š‚PƒoƒCƒg–Ú
+		else if(  _mbsbtype((const unsigned char *)p, 0) == _MBC_LEAD ){	// æ¼¢å­—ï¼‘ãƒã‚¤ãƒˆç›®
 			k = 1;
 		}
 		else if( *p == 0x22 ){
@@ -1105,12 +1081,12 @@ void DelChar(LPSTR t, char a)
 
 /*#$%
 ========================================================
-	ƒfƒVƒ}ƒ‹ƒAƒXƒL[‚ğ”’l‚É•ÏŠ·‚·‚é
+	ãƒ‡ã‚·ãƒãƒ«ã‚¢ã‚¹ã‚­ãƒ¼ã‚’æ•°å€¤ã«å¤‰æ›ã™ã‚‹
 --------------------------------------------------------
-	p : •¶š—ñ‚Ìƒ|ƒCƒ“ƒ^
-	n : •ÏŠ·Œ…”
+	p : æ–‡å­—åˆ—ã®ãƒã‚¤ãƒ³ã‚¿
+	n : å¤‰æ›æ¡æ•°
 --------------------------------------------------------
-	”’l
+	æ•°å€¤
 --------------------------------------------------------
 ========================================================
 */
@@ -1126,12 +1102,12 @@ int atoin(const char *p, int n)
 }
 /*#$%
 ========================================================
-	‚P‚UiƒAƒXƒL[‚ğ”’l‚É•ÏŠ·‚·‚é
+	ï¼‘ï¼–é€²ã‚¢ã‚¹ã‚­ãƒ¼ã‚’æ•°å€¤ã«å¤‰æ›ã™ã‚‹
 --------------------------------------------------------
-	p : •¶š—ñ‚Ìƒ|ƒCƒ“ƒ^
-	n : •ÏŠ·Œ…”
+	p : æ–‡å­—åˆ—ã®ãƒã‚¤ãƒ³ã‚¿
+	n : å¤‰æ›æ¡æ•°
 --------------------------------------------------------
-	”’l
+	æ•°å€¤
 --------------------------------------------------------
 ========================================================
 */
@@ -1163,7 +1139,7 @@ HWND GetMBHandle(int &flag)
 	return hd;
 }
 ///----------------------------------------------------------------
-///  ƒƒbƒZ[ƒW‚Ì•\¦
+///  ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®è¡¨ç¤º
 ///
 void InfoMB(LPCSTR fmt, ...)
 {
@@ -1184,7 +1160,7 @@ void InfoMB(LPCSTR fmt, ...)
 	DisPaint = FALSE;
 }
 ///----------------------------------------------------------------
-///  ƒGƒ‰[ƒƒbƒZ[ƒW‚Ì•\¦
+///  ã‚¨ãƒ©ãƒ¼ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®è¡¨ç¤º
 ///
 void ErrorMB(LPCSTR fmt, ...)
 {
@@ -1200,13 +1176,13 @@ void ErrorMB(LPCSTR fmt, ...)
 	DisPaint = TRUE;
 	flag |= (MB_OK | MB_ICONEXCLAMATION);
 	Application->NormalizeTopMosts();
-	::MessageBox(hd, bf, (sys.m_WinFontCharset != SHIFTJIS_CHARSET) ? "Error":"´×°", flag);
+	::MessageBox(hd, bf, (sys.m_WinFontCharset != SHIFTJIS_CHARSET) ? "Error":"ï½´ï¾—ï½°", flag);
 	Application->RestoreTopMosts();
 	DisPaint = FALSE;
 }
 
 ///----------------------------------------------------------------
-///  ŒxƒƒbƒZ[ƒW‚Ì•\¦
+///  è­¦å‘Šãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®è¡¨ç¤º
 ///
 void WarningMB(LPCSTR fmt, ...)
 {
@@ -1222,13 +1198,13 @@ void WarningMB(LPCSTR fmt, ...)
 	DisPaint = TRUE;
 	flag |= (MB_OK | MB_ICONEXCLAMATION);
 	Application->NormalizeTopMosts();
-	::MessageBox(hd, bf, (sys.m_WinFontCharset != SHIFTJIS_CHARSET)?"Warning":"Œx", flag);
+	::MessageBox(hd, bf, (sys.m_WinFontCharset != SHIFTJIS_CHARSET)?"Warning":"è­¦å‘Š", flag);
 	Application->RestoreTopMosts();
 	DisPaint = FALSE;
 }
 
 ///----------------------------------------------------------------
-///  Às‘I‘ğƒƒbƒZ[ƒW‚Ì•\¦
+///  å®Ÿè¡Œé¸æŠãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®è¡¨ç¤º
 ///
 int YesNoMB(LPCSTR fmt, ...)
 {
@@ -1252,7 +1228,7 @@ int YesNoMB(LPCSTR fmt, ...)
 }
 
 ///----------------------------------------------------------------
-///  Às‘I‘ğƒƒbƒZ[ƒW‚Ì•\¦
+///  å®Ÿè¡Œé¸æŠãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®è¡¨ç¤º
 ///
 int YesNoCancelMB(LPCSTR fmt, ...)
 {
@@ -1275,7 +1251,7 @@ int YesNoCancelMB(LPCSTR fmt, ...)
 }
 
 ///----------------------------------------------------------------
-///  Às‘I‘ğƒƒbƒZ[ƒW‚Ì•\¦
+///  å®Ÿè¡Œé¸æŠãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®è¡¨ç¤º
 ///
 int OkCancelMB(LPCSTR fmt, ...)
 {
@@ -1302,19 +1278,19 @@ int RemoveL2(LPSTR t, LPSTR ss, LPCSTR pKey, int size)
 	int		k;
 	LPCSTR	pp;
 	LPSTR	s;
-	const char	_tt1[]="[{(¢<";
-	const char	_tt2[]="]})£>";
+	const char	_tt1[]="[{(ï½¢<";
+	const char	_tt2[]="]})ï½£>";
 
 	int		len = strlen(pKey);
 	char ac = ';';
 	for( k = 0, s = ss; *s; s++ ){
-		if( k ){															// Š¿š‚QƒoƒCƒg–Ú
+		if( k ){															// æ¼¢å­—ï¼’ãƒã‚¤ãƒˆç›®
 			k = 0;
 			ac = 0x1e;
 		}
-		else if(  _mbsbtype((const unsigned char *)s, 0) == _MBC_LEAD ){	// Š¿š‚PƒoƒCƒg–Ú
+		else if(  _mbsbtype((const unsigned char *)s, 0) == _MBC_LEAD ){	// æ¼¢å­—ï¼‘ãƒã‚¤ãƒˆç›®
 			k = 1;
-			if( (len >= 2) && (strchr(" ,./;:*\t[{(¢<]})£>", ac)!=NULL) && (!strnicmp(s, pKey, len)) ){
+			if( (len >= 2) && (strchr(" ,./;:*\t[{(ï½¢<]})ï½£>", ac)!=NULL) && (!strnicmp(s, pKey, len)) ){
 				pp = s + len;
 				if( (pp = strchr(_tt1, *pp))!=NULL ){
 					c = _tt2[pp - _tt1];
@@ -1328,7 +1304,7 @@ int RemoveL2(LPSTR t, LPSTR ss, LPCSTR pKey, int size)
 				}
 			}
 		}
-		else if( (strchr(" ,./;:*\t\x1e[{(¢<]})£>", ac)!=NULL) && (!strnicmp(s, pKey, len)) ){
+		else if( (strchr(" ,./;:*\t\x1e[{(ï½¢<]})ï½£>", ac)!=NULL) && (!strnicmp(s, pKey, len)) ){
 			pp = s + len;
 			if( (pp = strchr(_tt1, *pp))!=NULL ){
 				c = _tt2[pp - _tt1];
@@ -1371,7 +1347,7 @@ void AddL2(LPSTR t, LPCSTR pKey, LPCSTR s, UCHAR c1, UCHAR c2, int size)
 	}
 }
 ///----------------------------------------------------------------
-///  ”š‚ªŠÜ‚Ü‚ê‚é‚©‚Ç‚¤‚©’²‚×‚é
+///  æ•°å­—ãŒå«ã¾ã‚Œã‚‹ã‹ã©ã†ã‹èª¿ã¹ã‚‹
 ///
 int IsNumbs(LPCSTR p)
 {
@@ -1381,7 +1357,7 @@ int IsNumbs(LPCSTR p)
 	return 0;
 }
 ///----------------------------------------------------------------
-///  ”š‚ªŠÜ‚Ü‚ê‚é‚©‚Ç‚¤‚©’²‚×‚é
+///  æ•°å­—ãŒå«ã¾ã‚Œã‚‹ã‹ã©ã†ã‹èª¿ã¹ã‚‹
 ///
 int IsAlphas(LPCSTR p)
 {
@@ -1391,7 +1367,7 @@ int IsAlphas(LPCSTR p)
 	return 0;
 }
 ///----------------------------------------------------------------
-///  RST‚©‚Ç‚¤‚©’²‚×‚é
+///  RSTã‹ã©ã†ã‹èª¿ã¹ã‚‹
 ///
 int IsRST(LPCSTR p)
 {
@@ -1411,30 +1387,30 @@ int IsCallChar(char c)
 	return 1;
 }
 ///----------------------------------------------------------------
-///  ƒR[ƒ‹ƒTƒCƒ“‚©‚Ç‚¤‚©’²‚×‚é
+///  ã‚³ãƒ¼ãƒ«ã‚µã‚¤ãƒ³ã‹ã©ã†ã‹èª¿ã¹ã‚‹
 ///
 int IsCall(LPCSTR p)
 {
 	int l = strlen(p);
 	if( l > 16 ) return 0;
 	if( l < 3 ) return 0;
-	if( isdigit(*p) ){					// æ“ª‚ª”š
-		if( l <= 3 ) return 0;				// 3•¶šˆÈ‰º‚ÌNG
-		if( isdigit(*(p+1)) ) return 0;		// 2•¶š–Ú‚ª”š‚ÌNG
+	if( isdigit(*p) ){					// å…ˆé ­ãŒæ•°å­—
+		if( l <= 3 ) return 0;				// 3æ–‡å­—ä»¥ä¸‹ã®æ™‚NG
+		if( isdigit(*(p+1)) ) return 0;		// 2æ–‡å­—ç›®ãŒæ•°å­—ã®æ™‚NG
 	}
-	if( isdigit(LastC(p)) ){			// ÅŒã‚ª”š
-		if( l <= 4 ) return 0;				// ‚S•¶šˆÈ‰º‚ÌNG
-//      if( !strchr(p, '/')==NULL ) return0;	// /‚ªŠÜ‚Ü‚ê‚Ä‚¢‚È‚¢NG
-//		if( p[l-2] != '/' ) return 0;		// ÅŒã‚Ì‚P‚Â‘O‚ª/ˆÈŠO‚ÌNG
+	if( isdigit(LastC(p)) ){			// æœ€å¾ŒãŒæ•°å­—
+		if( l <= 4 ) return 0;				// ï¼”æ–‡å­—ä»¥ä¸‹ã®æ™‚NG
+//      if( !strchr(p, '/')==NULL ) return0;	// /ãŒå«ã¾ã‚Œã¦ã„ãªã„æ™‚NG
+//		if( p[l-2] != '/' ) return 0;		// æœ€å¾Œã®ï¼‘ã¤å‰ãŒ/ä»¥å¤–ã®æ™‚NG
 	}
 	int i;
 	for( i = 0; i < l-1; i++, p++ ){
-		if( isdigit(*p) ) return 1;		// ”š‚ªŠÜ‚Ü‚ê‚Ä‚¢‚ê‚ÎOK
+		if( isdigit(*p) ) return 1;		// æ•°å­—ãŒå«ã¾ã‚Œã¦ã„ã‚Œã°OK
 	}
 	return 0;
 }
 ///----------------------------------------------------------------
-///  –¼‘O‚©‚Ç‚¤‚©’²‚×‚é
+///  åå‰ã‹ã©ã†ã‹èª¿ã¹ã‚‹
 ///
 int IsName(LPCSTR p)
 {
@@ -1446,9 +1422,9 @@ int IsName(LPCSTR p)
 }
 /*#$%
 ======================================================
-	‚i‚`‚Æ‚c‚w‚Ì‹æ•Ê‚ğ‚·‚é
+	ï¼ªï¼¡ã¨ï¼¤ï¼¸ã®åŒºåˆ¥ã‚’ã™ã‚‹
 ------------------------------------------------------
-	s : ƒR[ƒ‹ƒTƒCƒ“•¶š—ñ‚Ìƒ|ƒCƒ“ƒ^
+	s : ã‚³ãƒ¼ãƒ«ã‚µã‚¤ãƒ³æ–‡å­—åˆ—ã®ãƒã‚¤ãƒ³ã‚¿
 ------------------------------------------------------
 	1 : JA
 	0 : DX (JD1 INCLUDEED)
@@ -1506,11 +1482,11 @@ int IsJA(const char *s)
 }
 /*#$%
 ======================================================
-	ƒR[ƒ‹ƒTƒCƒ“‚ğƒNƒŠƒbƒv‚·‚é
+	ã‚³ãƒ¼ãƒ«ã‚µã‚¤ãƒ³ã‚’ã‚¯ãƒªãƒƒãƒ—ã™ã‚‹
 ------------------------------------------------------
-	s : ƒR[ƒ‹ƒTƒCƒ“•¶š—ñ‚Ìƒ|ƒCƒ“ƒ^
+	s : ã‚³ãƒ¼ãƒ«ã‚µã‚¤ãƒ³æ–‡å­—åˆ—ã®ãƒã‚¤ãƒ³ã‚¿
 ------------------------------------------------------
-	ƒNƒŠƒbƒvƒR[ƒ‹‚Ìƒ|ƒCƒ“ƒ^
+	ã‚¯ãƒªãƒƒãƒ—ã‚³ãƒ¼ãƒ«ã®ãƒã‚¤ãƒ³ã‚¿
 ------------------------------------------------------
 ======================================================
 */
@@ -1520,9 +1496,9 @@ LPCSTR ClipCall(LPCSTR s)
 	LPCSTR	p1, p2;
 
 	if( (p1=strchr(s, '/'))!=NULL ){
-		if( (p2=strchr(p1+1, '/'))!=NULL ){	/* ‚R•ªŠ„	*/
-			if( (int(strlen(p2+1)) < int((p2 - p1)+1)) || (!IsCall(p2+1)) ){		/* ÅŒã‚æ‚è“r’†‚ª’·‚¢	*/
-				if( ((p2-p1) < (p1-s))||(!IsCall(p1+1)) ){	/* “r’†‚æ‚èÅ‰‚ª’·‚¢	*/
+		if( (p2=strchr(p1+1, '/'))!=NULL ){	/* ï¼“åˆ†å‰²	*/
+			if( (int(strlen(p2+1)) < int((p2 - p1)+1)) || (!IsCall(p2+1)) ){		/* æœ€å¾Œã‚ˆã‚Šé€”ä¸­ãŒé•·ã„	*/
+				if( ((p2-p1) < (p1-s))||(!IsCall(p1+1)) ){	/* é€”ä¸­ã‚ˆã‚Šæœ€åˆãŒé•·ã„	*/
 					StrCopy(bf, s, MLCALL);
 					*strchr(bf, '/') = 0;
 					return(bf);
@@ -1533,7 +1509,7 @@ LPCSTR ClipCall(LPCSTR s)
 					return(bf);
 				}
 			}
-			else if( int(strlen(p2+1)) < int((p1 - s)+1) ){	/* ÅŒã‚æ‚èÅ‰‚ª’·‚¢	*/
+			else if( int(strlen(p2+1)) < int((p1 - s)+1) ){	/* æœ€å¾Œã‚ˆã‚Šæœ€åˆãŒé•·ã„	*/
 				StrCopy(bf, s, MLCALL);
 				*strchr(bf, '/') = 0;
 				return(bf);
@@ -1542,7 +1518,7 @@ LPCSTR ClipCall(LPCSTR s)
 				return(p2+1);
 			}
 		}
-		else {								/* ‚Q•ªŠ„	*/
+		else {								/* ï¼’åˆ†å‰²	*/
 			if( (int(strlen(p1+1)) < int((p1 - s)+1)) || (!IsCall(p1+1)) ){
 				StrCopy(bf, s, MLCALL);
 				*strchr(bf, '/') = 0;
@@ -1560,11 +1536,11 @@ LPCSTR ClipCall(LPCSTR s)
 
 /*#$%
 ======================================================
-	ƒ|[ƒ^ƒuƒ‹•\‹L‚ğ’²‚×‚é
+	ãƒãƒ¼ã‚¿ãƒ–ãƒ«è¡¨è¨˜ã‚’èª¿ã¹ã‚‹
 ------------------------------------------------------
-	p : ƒR[ƒ‹ƒTƒCƒ“•¶š—ñ‚Ìƒ|ƒCƒ“ƒ^
+	p : ã‚³ãƒ¼ãƒ«ã‚µã‚¤ãƒ³æ–‡å­—åˆ—ã®ãƒã‚¤ãƒ³ã‚¿
 ------------------------------------------------------
-	”’l‚Ìƒ|ƒCƒ“ƒ^
+	æ•°å€¤ã®ãƒã‚¤ãƒ³ã‚¿
 ------------------------------------------------------
 ======================================================
 */
@@ -1581,12 +1557,12 @@ static LPSTR chkptb(LPSTR p)
 
 /*#$%
 ======================================================
-	ƒ|[ƒ^ƒuƒ‹•\‹L‚Ì“ü‚ê‘Ö‚¦
+	ãƒãƒ¼ã‚¿ãƒ–ãƒ«è¡¨è¨˜ã®å…¥ã‚Œæ›¿ãˆ
 ------------------------------------------------------
-	s : ƒR[ƒ‹ƒTƒCƒ“•¶š—ñ‚Ìƒ|ƒCƒ“ƒ^
+	s : ã‚³ãƒ¼ãƒ«ã‚µã‚¤ãƒ³æ–‡å­—åˆ—ã®ãƒã‚¤ãƒ³ã‚¿
 ------------------------------------------------------
 ------------------------------------------------------
-	Œ³‚Ì•¶š—ñ‚ğ”j‰ó‚·‚é
+	å…ƒã®æ–‡å­—åˆ—ã‚’ç ´å£Šã™ã‚‹
 ======================================================
 */
 void chgptb(LPSTR s)
@@ -1608,11 +1584,11 @@ void chgptb(LPSTR s)
 
 /*#$%
 ======================================================
-	ƒR[ƒ‹ƒTƒCƒ“‚©‚çƒJƒ“ƒgƒŠ‚ÌŒ³‚ğƒNƒŠƒbƒv‚·‚é
+	ã‚³ãƒ¼ãƒ«ã‚µã‚¤ãƒ³ã‹ã‚‰ã‚«ãƒ³ãƒˆãƒªã®å…ƒã‚’ã‚¯ãƒªãƒƒãƒ—ã™ã‚‹
 ------------------------------------------------------
-	s : ƒR[ƒ‹ƒTƒCƒ“•¶š—ñ‚Ìƒ|ƒCƒ“ƒ^
+	s : ã‚³ãƒ¼ãƒ«ã‚µã‚¤ãƒ³æ–‡å­—åˆ—ã®ãƒã‚¤ãƒ³ã‚¿
 ------------------------------------------------------
-	ƒJƒ“ƒgƒŠ‚Ìƒ|ƒCƒ“ƒ^
+	ã‚«ãƒ³ãƒˆãƒªã®ãƒã‚¤ãƒ³ã‚¿
 ------------------------------------------------------
 ======================================================
 */
@@ -1622,7 +1598,7 @@ LPCSTR ClipCC(LPCSTR s)
 	LPSTR	p, t;
 
 	StrCopy(bf, s, MLCALL);
-	chgptb(bf);			/* ƒ|[ƒ^ƒuƒ‹•\‹L‚Ì“ü‚ê‘Ö‚¦	*/
+	chgptb(bf);			/* ãƒãƒ¼ã‚¿ãƒ–ãƒ«è¡¨è¨˜ã®å…¥ã‚Œæ›¿ãˆ	*/
 	for( p = bf; *p; ){
 		if( *p ){
 			p = StrDlm(t, p, '/');
@@ -1639,7 +1615,7 @@ LPCSTR ClipCC(LPCSTR s)
 }
 
 ///----------------------------------------------------------------
-///  •¶š—ñ•ÏŠ·
+///  æ–‡å­—åˆ—å¤‰æ›
 ///
 void Yen2CrLf(AnsiString &ws, AnsiString cs)
 {
@@ -1712,26 +1688,26 @@ void CrLf2Yen(AnsiString &ws, AnsiString cs)
 
 
 //---------------------------------------------------------------------------
-// ƒŠƒXƒg‚Ö‚Ì’èŒ^ƒƒbƒZ[ƒW‚Ì“o˜^ií‚ÉÅV‚ªæ“ª‚É‚È‚éj
+// ãƒªã‚¹ãƒˆã¸ã®å®šå‹ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®ç™»éŒ²ï¼ˆå¸¸ã«æœ€æ–°ãŒå…ˆé ­ã«ãªã‚‹ï¼‰
 void EntryMsg(AnsiString ttl, AnsiString as, WORD Key)
 {
 	if( ttl.IsEmpty() ) return;
 	if( as.IsEmpty() ) return;
 	int i, j;
 
-	// ŒŸõ
+	// æ¤œç´¢
 	for( i = 0; i < MSGLISTMAX; i++ ){
 		if( sys.m_MsgName[i].IsEmpty() ) break;
 		if( sys.m_MsgName[i] == ttl ) break;
 	}
-	// ˆê’v‚µ‚½‚à‚Ì‚ğíœ
+	// ä¸€è‡´ã—ãŸã‚‚ã®ã‚’å‰Šé™¤
 	for( j = i; j < (MSGLISTMAX - 1); j++ ){
 		if( sys.m_MsgName[j].IsEmpty() ) break;
 		sys.m_MsgList[j] = sys.m_MsgList[j+1];
 		sys.m_MsgName[j] = sys.m_MsgName[j+1];
 		sys.m_MsgKey[j] = sys.m_MsgKey[j+1];
 	}
-	// ‘S‘Ì‚ğ‚P‚ÂŒã‚ë‚É‚¸‚ç‚·
+	// å…¨ä½“ã‚’ï¼‘ã¤å¾Œã‚ã«ãšã‚‰ã™
 	for( j = MSGLISTMAX - 1; j > 0; j-- ){
 		sys.m_MsgList[j] = sys.m_MsgList[j-1];
 		sys.m_MsgName[j] = sys.m_MsgName[j-1];
@@ -1743,7 +1719,7 @@ void EntryMsg(AnsiString ttl, AnsiString as, WORD Key)
 }
 
 //---------------------------------------------------------------------------
-// ƒRƒ“ƒ{‚a‚n‚w‚É•¶š—ñ‚ğİ’è‚·‚é
+// ã‚³ãƒ³ãƒœï¼¢ï¼¯ï¼¸ã«æ–‡å­—åˆ—ã‚’è¨­å®šã™ã‚‹
 void SetComboBox(TComboBox *pCombo, LPCSTR pList)
 {
 	pCombo->Clear();
@@ -1760,7 +1736,7 @@ void SetComboBox(TComboBox *pCombo, LPCSTR pList)
 }
 
 //---------------------------------------------------------------------------
-// ƒRƒ“ƒ{‚a‚n‚w‚É•¶š—ñ‚ğİ’è‚·‚é
+// ã‚³ãƒ³ãƒœï¼¢ï¼¯ï¼¸ã«æ–‡å­—åˆ—ã‚’è¨­å®šã™ã‚‹
 void GetComboBox(AnsiString &as, TComboBox *pCombo)
 {
 	as = "";
@@ -1771,7 +1747,7 @@ void GetComboBox(AnsiString &as, TComboBox *pCombo)
 	}
 }
 //---------------------------------------------------------------------------
-// ƒOƒŠƒbƒh‚ÌŠÔŠu‚ğİ’è‚·‚é
+// ã‚°ãƒªãƒƒãƒ‰ã®é–“éš”ã‚’è¨­å®šã™ã‚‹
 void SetGridWidths(TStringGrid *pGrid, LPCSTR pList)
 {
 	LPSTR s = strdup(pList);
@@ -1790,7 +1766,7 @@ void SetGridWidths(TStringGrid *pGrid, LPCSTR pList)
 	free(s);
 }
 //---------------------------------------------------------------------------
-// ƒOƒŠƒbƒh‚ÌŠÔŠu‚ğ“Ç‚İ‚±‚Ş
+// ã‚°ãƒªãƒƒãƒ‰ã®é–“éš”ã‚’èª­ã¿ã“ã‚€
 void GetGridWidths(AnsiString &as, TStringGrid *pGrid)
 {
 	as = "";
@@ -1848,16 +1824,16 @@ LPCSTR GetZeroCode(void)
 			bf[0] = 0xa8;    // 0xa9
 			bf[1] = 0xaa;
 			break;
-		case CHINESEBIG5_CHARSET:   // ‘ä˜p
+		case CHINESEBIG5_CHARSET:   // å°æ¹¾
 			bf[0] = 0xa3;
 			bf[1] = 0x58;
 			break;
-		case 134:                   // ’†‘ŒêŠÈ—ª
+		case 134:                   // ä¸­å›½èªç°¡ç•¥
 			bf[0] = 0xa6;
 			bf[1] = 0xd5;
 			break;
 		default:
-			bf[0] = char('Ø');
+			bf[0] = char('ï¾˜');
 			bf[1] = 0;
 		break;
 	}
@@ -1903,7 +1879,7 @@ void NormalWindow(TForm *tp)
 	}
 }
 //---------------------------------------------------------------------------
-// ƒƒCƒ“‰æ–Ê•\¦ˆ—ƒNƒ‰ƒX
+// ãƒ¡ã‚¤ãƒ³ç”»é¢è¡¨ç¤ºå‡¦ç†ã‚¯ãƒ©ã‚¹
 CPrintText::CPrintText()
 {
 	pPaintBox = NULL;
@@ -2155,8 +2131,8 @@ void CPrintText::Scroll(void)
 }
 
 //------------------------------------------
-// 0: / ‚Å•ª—£‚µ‚È‚¢
-// 1: / ‚Å•ª—£
+// 0: / ã§åˆ†é›¢ã—ãªã„
+// 1: / ã§åˆ†é›¢
 void CPrintText::GetText(LPSTR t, int x, int y, int sw)
 {
 	char	*bp = new char[m_ColMax * 3 + 1];
@@ -2587,7 +2563,7 @@ void CPrintText::OpenLogFile(void)
 
 	m_fp = fopen(sys.m_LogName.c_str(), "ab");
 	if( m_fp == NULL ){
-		ErrorMB( "%s ‚ªƒI[ƒvƒ“‚Å‚«‚Ü‚¹‚ñ.", sys.m_LogName.c_str() );
+		ErrorMB( "%s ãŒã‚ªãƒ¼ãƒ—ãƒ³ã§ãã¾ã›ã‚“.", sys.m_LogName.c_str() );
 		return;
 	}
 	fprintf(m_fp, "\r\n");
@@ -2598,14 +2574,14 @@ void CPrintText::CloseLogFile(void)
 	if( m_fp != NULL ){
 		if( fclose(m_fp) ){
 			m_fp = NULL;
-			ErrorMB( "%s ‚ª³‚µ‚­ì¬‚Å‚«‚Ü‚¹‚ñ‚Å‚µ‚½.", sys.m_LogName.c_str() );
+			ErrorMB( "%s ãŒæ­£ã—ãä½œæˆã§ãã¾ã›ã‚“ã§ã—ãŸ.", sys.m_LogName.c_str() );
 		}
 		m_fp = NULL;
 	}
 }
 
 //---------------------------------------------------------------------------
-// ƒL[“ü—Í‰æ–Ê•\¦ˆ—ƒNƒ‰ƒX
+// ã‚­ãƒ¼å…¥åŠ›ç”»é¢è¡¨ç¤ºå‡¦ç†ã‚¯ãƒ©ã‚¹
 CFifoEdit::CFifoEdit()
 {
 	pPaintBox = NULL;
@@ -2816,7 +2792,7 @@ void CFifoEdit::ScrollBarChange(void)
 	m_DispTop = m_WriteLine - m_LineMax - n + 1;
 	if( m_DispTop < 0 ) m_DispTop = 0;
 	if( m_DispTop > (m_WriteLine - m_LineMax) ) m_DispTop = m_WriteLine - m_LineMax + 1;
-	if( pScroll->Max == pScroll->Position ){		// ÅIs‚Ì
+	if( pScroll->Max == pScroll->Position ){		// æœ€çµ‚è¡Œã®æ™‚
 		m_DisEvent++;
 		int max = m_WriteLine - m_LineMax + 1;
 		pScroll->SetParams(max, 0, max);
@@ -2866,7 +2842,7 @@ void CFifoEdit::ScrollBarDown(int page)
 }
 
 //---------------------------------------------------------------
-// ƒXƒNƒ[ƒ‹ƒo[‚ÌXV
+// ã‚¹ã‚¯ãƒ­ãƒ¼ãƒ«ãƒãƒ¼ã®æ›´æ–°
 void CFifoEdit::UpdateScroll(void)
 {
 	m_DisEvent++;
@@ -2883,18 +2859,18 @@ void CFifoEdit::UpdateScroll(void)
 	m_DisEvent--;
 }
 //---------------------------------------------------------------
-// ‚·‚×‚ÄƒNƒŠƒA‚·‚é
+// ã™ã¹ã¦ã‚¯ãƒªã‚¢ã™ã‚‹
 void CFifoEdit::Clear(void)
 {
-	m_Line = 0;			// ‰æ–Ê“à‚ÌsˆÊ’u
+	m_Line = 0;			// ç”»é¢å†…ã®è¡Œä½ç½®
 
-	m_DispTop = 0;								// •\¦ƒgƒbƒvs‚ÌˆÊ’u
+	m_DispTop = 0;								// è¡¨ç¤ºãƒˆãƒƒãƒ—è¡Œã®ä½ç½®
 
-	m_WriteLine = 0;	// ‘‚«‚±‚İs‚ÌˆÊ’u
-	m_WriteCol = 0;		// ‘‚«‚±‚İƒJƒ‰ƒ€ˆÊ’u
+	m_WriteLine = 0;	// æ›¸ãã“ã¿è¡Œã®ä½ç½®
+	m_WriteCol = 0;		// æ›¸ãã“ã¿ã‚«ãƒ©ãƒ ä½ç½®
 
-	m_ReadLine = 0;		// æ‚è‚¾‚µs‚ÌˆÊ’u
-	m_ReadCol = 0;		// æ‚è‚¾‚µƒJƒ‰ƒ€ˆÊ’u
+	m_ReadLine = 0;		// å–ã‚Šã ã—è¡Œã®ä½ç½®
+	m_ReadCol = 0;		// å–ã‚Šã ã—ã‚«ãƒ©ãƒ ä½ç½®
 
 	int i;
 	for( i = 0; i < FIFOLINEMAX; i++ ){
@@ -2905,7 +2881,7 @@ void CFifoEdit::Clear(void)
 }
 
 //---------------------------------------------------------------
-// æ“ª‚©‚ç‚Ì•¶š—ñ‚ğ”ñ”j‰ó‚Åæ‚èo‚·
+// å…ˆé ­ã‹ã‚‰ã®æ–‡å­—åˆ—ã‚’éç ´å£Šã§å–ã‚Šå‡ºã™
 void CFifoEdit::GetString(AnsiString &as)
 {
 	as = "";
@@ -2916,7 +2892,7 @@ void CFifoEdit::GetString(AnsiString &as)
 	}
 }
 //---------------------------------------------------------------
-// æ‚è‚¾‚µ‰Â”\‚È•¶š”‚ğ“¾‚é
+// å–ã‚Šã ã—å¯èƒ½ãªæ–‡å­—æ•°ã‚’å¾—ã‚‹
 int CFifoEdit::GetLen(void)
 {
 	int mr = m_ReadLine;
@@ -2929,12 +2905,12 @@ int CFifoEdit::GetLen(void)
 	return n;
 }
 //---------------------------------------------------------------
-// ÅŒã‚Ì•¶š‚ğ“¾‚é
+// æœ€å¾Œã®æ–‡å­—ã‚’å¾—ã‚‹
 char CFifoEdit::GetLastChar(void)
 {
-	if( m_ReadLine > m_WriteLine ) return 0;		// ‘—o•¶š‚È‚µ
-	if( m_ReadLine == m_WriteLine ){	// “¯ˆês‚Ì
-		if( m_WriteCol <= m_ReadCol ) return 0; 	// ‘—o•¶š‚È‚µ
+	if( m_ReadLine > m_WriteLine ) return 0;		// é€å‡ºæ–‡å­—ãªã—
+	if( m_ReadLine == m_WriteLine ){	// åŒä¸€è¡Œã®æ™‚
+		if( m_WriteCol <= m_ReadCol ) return 0; 	// é€å‡ºæ–‡å­—ãªã—
 	}
 	if( !m_WriteCol ) return 0x0a;
 
@@ -2944,14 +2920,14 @@ char CFifoEdit::GetLastChar(void)
 	return *p;
 }
 //---------------------------------------------------------------
-// ƒXƒy[ƒX‚ªŠÜ‚Ü‚ê‚Ä‚¢‚é‚©‚Ç‚¤‚©’²‚×‚é
+// ã‚¹ãƒšãƒ¼ã‚¹ãŒå«ã¾ã‚Œã¦ã„ã‚‹ã‹ã©ã†ã‹èª¿ã¹ã‚‹
 int CFifoEdit::IsSAS(int sw)
 {
-	if( m_ReadLine > m_WriteLine ) return 1;		// ‘—o•¶š‚È‚µ
-	if( m_ReadLine == m_WriteLine ){	// “¯ˆês‚Ì
-		if( m_WriteCol <= m_ReadCol ) return 1; 	// ‘—o•¶š‚È‚µ
+	if( m_ReadLine > m_WriteLine ) return 1;		// é€å‡ºæ–‡å­—ãªã—
+	if( m_ReadLine == m_WriteLine ){	// åŒä¸€è¡Œã®æ™‚
+		if( m_WriteCol <= m_ReadCol ) return 1; 	// é€å‡ºæ–‡å­—ãªã—
 	}
-	if( m_ReadLine < m_WriteLine ) return 1;		// •¡”s‚Ì‚Æ‚«
+	if( m_ReadLine < m_WriteLine ) return 1;		// è¤‡æ•°è¡Œã®ã¨ã
 
 
 	LPSTR p;
@@ -2971,21 +2947,21 @@ int CFifoEdit::IsSAS(int sw)
 	return 0;
 }
 //---------------------------------------------------------------
-// æ“ª‚Ìˆê•¶š‚ğæ‚èo‚·
+// å…ˆé ­ã®ä¸€æ–‡å­—ã‚’å–ã‚Šå‡ºã™
 char CFifoEdit::GetChar(void)
 {
 	LPSTR p;
 	char c;
 
-	if( m_ReadLine > m_WriteLine ) return -1;		// ‘—o•¶š‚È‚µ
-	if( m_ReadLine == m_WriteLine ){	// “¯ˆês‚Ì
-		if( m_WriteCol <= m_ReadCol ) return -1; 	// ‘—o•¶š‚È‚µ
+	if( m_ReadLine > m_WriteLine ) return -1;		// é€å‡ºæ–‡å­—ãªã—
+	if( m_ReadLine == m_WriteLine ){	// åŒä¸€è¡Œã®æ™‚
+		if( m_WriteCol <= m_ReadCol ) return -1; 	// é€å‡ºæ–‡å­—ãªã—
 	}
 
 	p = pList[m_ReadLine];
 	p += m_ReadCol;
 
-	if( !*p ){		// ‰üs
+	if( !*p ){		// æ”¹è¡Œ
 		if( m_ReadCol ){
 			c = *(p-1);
 			if( ((c == '_')||(c == '~')) && (m_ReadCol == m_ColMax) ){
@@ -2999,9 +2975,9 @@ char CFifoEdit::GetChar(void)
 		m_ReadCol = 0;
 	}
 	else {
-		if( *p == '%' ){		// “Áê‹L†
+		if( *p == '%' ){		// ç‰¹æ®Šè¨˜å·
 			if( (m_ReadLine >= m_WriteLine) && (m_WriteCol <= (m_ReadCol + 1)) ){
-				return 0;		// ‘—M•Û—¯
+				return 0;		// é€ä¿¡ä¿ç•™
 			}
 		}
 		c = *p;
@@ -3016,19 +2992,19 @@ char CFifoEdit::GetChar(void)
 }
 
 //---------------------------------------------------------------
-// æ“ª‚Ìˆê•¶š‚Ì”ñ”j‰ó‚Éæ‚èo‚·
+// å…ˆé ­ã®ä¸€æ–‡å­—ã®éç ´å£Šã«å–ã‚Šå‡ºã™
 LPCSTR CFifoEdit::GetCurLine(void)
 {
 	return pList[m_WriteLine];
 }
 
 //---------------------------------------------------------------
-// ƒoƒbƒNƒXƒy[ƒXˆ—
+// ãƒãƒƒã‚¯ã‚¹ãƒšãƒ¼ã‚¹å‡¦ç†
 int CFifoEdit::BackSpace(void)
 {
-	if( m_ReadLine > m_WriteLine ) return FALSE;		// ‘—o•¶š‚È‚µ
-	if( m_ReadLine == m_WriteLine ){	// “¯ˆês‚Ì
-		if( m_WriteCol <= m_ReadCol ) return FALSE; 	// ‘—o•¶š‚È‚µ
+	if( m_ReadLine > m_WriteLine ) return FALSE;		// é€å‡ºæ–‡å­—ãªã—
+	if( m_ReadLine == m_WriteLine ){	// åŒä¸€è¡Œã®æ™‚
+		if( m_WriteCol <= m_ReadCol ) return FALSE; 	// é€å‡ºæ–‡å­—ãªã—
 	}
 	if( m_WriteCol ){
 		m_WriteCol--;
@@ -3053,12 +3029,12 @@ int CFifoEdit::BackSpace(void)
 }
 
 //---------------------------------------------------------------
-// 1sƒoƒbƒNƒXƒy[ƒXˆ—
+// 1è¡Œãƒãƒƒã‚¯ã‚¹ãƒšãƒ¼ã‚¹å‡¦ç†
 int CFifoEdit::LineBackSpace(void)
 {
-	if( m_ReadLine > m_WriteLine ) return FALSE;		// ‘—o•¶š‚È‚µ
-	if( m_ReadLine == m_WriteLine ){	// “¯ˆês‚Ì
-		if( m_WriteCol <= m_ReadCol ) return FALSE; 	// ‘—o•¶š‚È‚µ
+	if( m_ReadLine > m_WriteLine ) return FALSE;		// é€å‡ºæ–‡å­—ãªã—
+	if( m_ReadLine == m_WriteLine ){	// åŒä¸€è¡Œã®æ™‚
+		if( m_WriteCol <= m_ReadCol ) return FALSE; 	// é€å‡ºæ–‡å­—ãªã—
 	}
 
 	if( m_WriteCol ){
@@ -3073,10 +3049,10 @@ int CFifoEdit::LineBackSpace(void)
 }
 
 //---------------------------------------------------------------
-// æ“ª‚Ì‚Ps‚ğ–•Á‚·‚é
+// å…ˆé ­ã®ï¼‘è¡Œã‚’æŠ¹æ¶ˆã™ã‚‹
 int CFifoEdit::DeleteTop(void)
 {
-	if( m_ReadLine ){		// ‘—oÏ‚İ
+	if( m_ReadLine ){		// é€å‡ºæ¸ˆã¿
 		int i;
 		for( i = 0; i < (FIFOLINEMAX - 1); i++ ){
 			strcpy(pList[i], pList[i+1]);
@@ -3101,19 +3077,19 @@ void CFifoEdit::PutChar(char c)
 {
 	int show = (m_WriteLine > (m_DispTop + m_Line)) ? 0 : 1;
 
-	if( show && (c == 0x08) ){	// BS‚Ì
+	if( show && (c == 0x08) ){	// BSã®æ™‚
 		if( BackSpace() == TRUE ) return;
 		c = 'X';
 	}
-	if( m_WriteLine >= FIFOLINEMAX ){		// ƒoƒbƒtƒ@ƒtƒ‹‚Ì
+	if( m_WriteLine >= FIFOLINEMAX ){		// ãƒãƒƒãƒ•ã‚¡ãƒ•ãƒ«ã®æ™‚
 		if( DeleteTop() == FALSE ) return;
 	}
 	CursorOff();
-	if( c != 0x0a ){		// LF‚Íˆ—‚µ‚È‚¢
+	if( c != 0x0a ){		// LFã¯å‡¦ç†ã—ãªã„
 		if( c == 0x0d ){
 			m_WriteLine++;
 			m_WriteCol = 0;
-			if( show ){				// •\¦’†‚Ì
+			if( show ){				// è¡¨ç¤ºä¸­ã®æ™‚
 				m_Line++;
 				if( m_Line >= m_LineMax ){
 					m_Line--;
@@ -3136,7 +3112,7 @@ void CFifoEdit::PutChar(char c)
 			if( m_WriteCol >= m_ColMax ){
 				m_WriteCol = 0;
 				m_WriteLine++;
-				if( show ){				// •\¦’†‚Ì
+				if( show ){				// è¡¨ç¤ºä¸­ã®æ™‚
 					m_Line++;
 					if( m_Line >= m_LineMax ){
 						m_Line--;
@@ -3161,7 +3137,7 @@ void CFifoEdit::PutText(LPCSTR p)
 }
 
 ///----------------------------------------------------------------
-///  CAlignƒNƒ‰ƒX
+///  CAlignã‚¯ãƒ©ã‚¹
 void CAlign::InitControl(TControl *p, TControl *pB, TFont *pF /*= NULL*/)
 {
 	tp = p;
@@ -3241,7 +3217,7 @@ void CAlign::NewFont(AnsiString &FontName, BYTE Charset, TFontStyles fs)
 	}
 }
 ///----------------------------------------------------------------
-///  CAlignListƒNƒ‰ƒX
+///  CAlignListã‚¯ãƒ©ã‚¹
 CAlignList::CAlignList(void)
 {
 	Max = 0;
@@ -3323,7 +3299,7 @@ void CAlignList::NewFont(AnsiString &FontName, BYTE Charset, TFontStyles fs)
 }
 
 ///----------------------------------------------------------------
-///  CAlignGridƒNƒ‰ƒX
+///  CAlignGridã‚¯ãƒ©ã‚¹
 void CAlignGrid::InitGrid(TStringGrid *p)
 {
 	BWidth = p->Width;
@@ -3349,7 +3325,7 @@ void CAlignGrid::NewAlign(TStringGrid *p)
 
 ///------------------------------------------------------
 ///
-///CWebRef ƒNƒ‰ƒX
+///CWebRef ã‚¯ãƒ©ã‚¹
 ///
 void MakeCommand(LPSTR t, LPCSTR s, LPCSTR p)
 {
@@ -3380,7 +3356,7 @@ CWebRef::CWebRef()
 {
 	HTML = "";
 
-	HKEY hkey=NULL;	/* ƒI[ƒvƒ“ ƒL[‚Ìƒnƒ“ƒhƒ‹	*/
+	HKEY hkey=NULL;	/* ã‚ªãƒ¼ãƒ—ãƒ³ ã‚­ãƒ¼ã®ãƒãƒ³ãƒ‰ãƒ«	*/
 
 	char    bf[512], name[512];
 	ULONG   namelen, len;
@@ -3411,7 +3387,7 @@ void CWebRef::ShowHTML(LPCSTR url)
 
 ///------------------------------------------------------
 ///
-///CWaitCursor ƒNƒ‰ƒX
+///CWaitCursor ã‚¯ãƒ©ã‚¹
 ///
 CWaitCursor::CWaitCursor()
 {
@@ -3435,7 +3411,7 @@ void CWaitCursor::Wait(void)
 }
 
 ///-------------------------------------------------------
-/// CRecentMenuƒNƒ‰ƒX
+/// CRecentMenuã‚¯ãƒ©ã‚¹
 
 CRecentMenu::CRecentMenu()
 {

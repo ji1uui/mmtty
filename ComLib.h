@@ -55,7 +55,7 @@
 #define SHIFTL	10
 #define	MARKL	300
 #define	SPACEH	2700
-#define	XYCOLLECT	512		// XY-Scope �̃f�[�^���W�T�C�Y
+#define	XYCOLLECT	512		// XY-Scope のデータ収集サイズ
 
 #define	REMMENU		1
 #define	REMCTRL		2
@@ -85,11 +85,11 @@ extern	int		FSKCount1;
 extern	int		FSKCount2;
 extern	int		FSKDeff;
 
-extern	LCID	lcid;				// ���P�[�����
+extern	LCID	lcid;				// ロケール情報
 extern	int		DisPaint;
 extern	int		Remote;
 
-extern	double	SampFreq;			// �T���v�����O���g��
+extern	double	SampFreq;			// サンプリング周波数
 extern	double	SampBase;
 extern	double	DemSamp;
 extern	int		SampType;
@@ -102,7 +102,7 @@ extern	char	LogDir[256];
 extern	char	OutFileDir[256];
 extern	char	MMLogDir[256];
 extern	char	ExtLogDir[256];
-extern	char	RecDir[256];		// �^���t�@�C���̃f�B���N�g��
+extern	char	RecDir[256];		// 録音ファイルのディレクトリ
 
 extern	AnsiString	JanHelp;
 
@@ -480,15 +480,15 @@ class CFifoEdit
 
 	LPSTR		pList[FIFOLINEMAX];
 
-	int			m_Line;			// ��ʓ��̍s�ʒu
+	int			m_Line;			// 画面内の行位置
 
-	int			m_DispTop;		// �\���g�b�v�s�̈ʒu
-	int			m_DispLast;		// �\���ŏI�s�̈ʒu
+	int			m_DispTop;		// 表示トップ行の位置
+	int			m_DispLast;		// 表示最終行の位置
 
-	int			m_WriteLine;	// �������ݍs�̈ʒu
+	int			m_WriteLine;	// 書きこみ行の位置
 
-	int			m_ReadLine;		// ��肾���s�̈ʒu
-	int			m_ReadCol;		// ��肾���J�����ʒu
+	int			m_ReadLine;		// 取りだし行の位置
+	int			m_ReadCol;		// 取りだしカラム位置
 
 	int			m_FH;
 	int			m_FW;
@@ -502,7 +502,7 @@ class CFifoEdit
 	int			m_DisEvent;
 public:
 	int			m_ColMax;
-	int			m_WriteCol;		// �������݃J�����ʒu
+	int			m_WriteCol;		// 書きこみカラム位置
 private:
 	void Scroll(void);
 	void DrawCursor(int sw);
@@ -541,7 +541,7 @@ public:
 };
 
 ///---------------------------------------------------------
-///  �R���g���[���̃A���C���̊Ǘ��N���X
+///  コントロールのアラインの管理クラス
 class CAlign
 {
 public:
@@ -572,7 +572,7 @@ public:
 };
 
 ///---------------------------------------------------------
-///  �R���g���[���̃A���C���̊Ǘ��N���X
+///  コントロールのアラインの管理クラス
 class CAlignList
 {
 private:
@@ -638,14 +638,22 @@ public:
 };
 
 ///-------------------------------------------------------
-/// CRecentMenu�N���X
-#define	RECMENUMAX	4	// �����ł���ő�̐�
+/// CRecentMenuクラス
+#define	RECMENUMAX	4	// 処理できる最大の数
 class CRecentMenu
 {
 private:
 public:
-	int		InsPos;		// ���j���[�}���ʒu�̔ԍ�
-	int		Max;		// �������鐔
+	int		InsPos;		// メニュー挿入位置の番号
+// EN: Initialize DSP parameters from sampling frequency.
+// JP(romanized): sanpuringu shuhasuu kara DSP parameter o shokika.
+// EN: Get current UTC time and apply configured offset.
+// JP(romanized): genzai no UTC ni settei offset o tekiyou.
+// EN: Get current local time and apply configured offset.
+// JP(romanized): genzai no local time ni settei offset o tekiyou.
+// EN: Duplicate C-string; caller owns returned memory.
+// JP(romanized): C string o fukusei shi henshuu buffer o kaesu.
+	int		Max;		// 処理する数
 	AnsiString	Caption[RECMENUMAX];
 	TMenuItem	*pMenu;
 	TMenuItem	*Items[RECMENUMAX+1];
