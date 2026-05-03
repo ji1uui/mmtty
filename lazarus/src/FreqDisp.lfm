@@ -1,0 +1,10 @@
+object FreqDispForm: TFreqDispForm
+  Left = 200
+  Height = 240
+  Top = 200
+  Width = 320
+  Caption = 'FreqDisp'
+  ClientHeight = 240
+  ClientWidth = 320
+  LCLVersion = '3.0.0.0'
+end
