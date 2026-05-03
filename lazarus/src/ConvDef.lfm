@@ -1,0 +1,20 @@
+object ConvDefForm: TConvDefForm
+  Left = 200
+  Height = 260
+  Top = 200
+  Width = 360
+  Caption = 'ConvDef'
+  ClientHeight = 260
+  ClientWidth = 360
+  OnCreate = FormCreate
+  LCLVersion = '3.0.0.0'
+  object MemoInfo: TMemo
+    Left = 8
+    Height = 244
+    Top = 8
+    Width = 344
+    Align = alClient
+    ReadOnly = True
+    TabOrder = 0
+  end
+end
